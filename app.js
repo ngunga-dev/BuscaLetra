@@ -1,12 +1,12 @@
 const form=document.querySelector('#form')
 const searchInput=document.querySelector('#search')
-const songContainer=document.querySelector('#songs-container')
+const songsContainer=document.querySelector('#songs-container')
 const prevAndNextContainer=document.querySelector('#prev-and-next-container')
 
-const apiUrl=`https://api.lyrics.ovh`;
+const apiUrl=`https://api.lyrics.ovh/`
 
 const getMoreSongs = async url=>{
-    const response= await fetch(`https://cors-anywhere.herokuapp.com/${url}`)
+    const response= await fetch(`https://robwu.nl/cors-anywhere.html${url}`)
     const data= await response.json()
     console.log(data);
     insertSongdIntoPages(data)
@@ -15,7 +15,7 @@ const getMoreSongs = async url=>{
 const insertSongdIntoPages=songsInfos=>{
 
    /* console.log(songsInfos.data.map(song=>`<li>${song.title}</li>`).join(''))*/
-  songContainer.innerHTML=songsInfos.data.map(song=>`
+  songsContainer.innerHTML=songsInfos.data.map(song=>`
     <li class="song">
         <span class="song-artist"><strong>${song.artist.name}</strong> - ${song.title}</span>
         <button class="btn" data-artist="${song.artist.name}"  data-song-title="${song.title}">Ver Letra</button>
@@ -26,8 +26,7 @@ const insertSongdIntoPages=songsInfos=>{
         prevAndNextContainer.innerHTML=`
          ${songsInfos.prev ? `<button class="btn" onClick="getMoreSongs('${songsInfos.prev}')">Anteriores</button>`: ''}
          ${songsInfos.next ? `<button class="btn" onClick="getMoreSongs('${songsInfos.next}')">Proximas</button>`: ''}
-         
-         `
+        `
         return
     }
     prevAndNextContainer.innerHTML=''
@@ -47,9 +46,36 @@ form.addEventListener('submit',event=>{
     const searchTerm=searchInput.value.trim()
 
     if(!(searchTerm)){
-        songContainer.innerHTML=`<li class="warning-message">
+        songsContainer.innerHTML=`<li class="warning-message">
         Por favor, digite um termo valido!</li>`
         return
     }
     fetchSongs(searchTerm)
 })
+
+const fetchLyrcs=async(artist,songTitle)=>{
+    const response=await fetch(`${apiUrl}/v1/${artist}/${songTitle}`)
+    const data=await response.json()
+    
+
+    songsContainer.innerHTML=`
+    <li class="lyrics-container">
+        <h2><strong>${songTitle}</strong> - ${artist}</h2> 
+        <p class="lyrics">${data.lyrics}</p>  
+    </li>
+    `
+}
+
+songsContainer.addEventListener('click',event=>{
+    const clickdElement=event.target
+
+
+    if(clickdElement.tagName==='BUTTON'){
+        const artist=clickdElement.getAttribute('data-artist')
+        const songTitle=clickdElement.getAttribute('data-song-title')
+
+        fetchLyrcs(artist,songTitle)
+    }
+})
+
+
